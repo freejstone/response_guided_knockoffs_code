@@ -17,7 +17,7 @@ The ME and MVR optimizers follow the algorithms of Spector and Janson. The R imp
 
 ## Repository structure
 
-| Path | Purpose |naive
+| Path | Purpose |
 | --- | --- |
 | `functions/functions.R` | Main knockoff constructions and response-guided and signed filters. |
 | `functions/helpers.R` | Supporting numerical and data-handling functions. |
@@ -53,6 +53,7 @@ install.packages(c(
 ## Reproducing the results
 
 Run the following commands from the repository root. The full simulations are computationally intensive.
+
 ### Motivating naive-procedure simulation
 
 ```bash
@@ -98,6 +99,7 @@ The analysis uses resistance measurements for the protease inhibitors atazanavir
 The combined relative-power visualization is produced with:
 
 ```bash
-cd code
 Rscript plot_ratio.R
 ```
+
+Before running `plot_ratio.R`, set the `base` variable at the top of that script to the repository root for your local checkout.
