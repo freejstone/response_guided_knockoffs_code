@@ -1,6 +1,6 @@
 suppressMessages(library(tidyverse))
 
-base = "/Users/jfre0619/2026_response_guided_knockoffs/code"
+base = "."
 
 files = c("Simulation 1"   = "simulation_1_paper/sim_1_res.csv",
            "Simulation 2"   = "simulation_2_paper/sim_2_res.csv",

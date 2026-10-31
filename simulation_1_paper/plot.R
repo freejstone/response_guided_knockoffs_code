@@ -15,6 +15,9 @@ ks = c(50, 100, 150)
 seeds = 0:99
 alpha_list = seq(0.3, 0.01, by = -0.01)
 target_alphas = c(0.05, 0.1, 0.2, 0.3)
+# Fixed setting used for the empirical FDR plot in the manuscript.
+fdr_n = 1500
+fdr_k = 100
 
 required_columns = c(
   "SG_entropy_FDP", "SG_entropy_power",
@@ -129,9 +132,9 @@ average_over_design_grid = function(df) {
 power_summary_by_setting = summarise_results_by_setting(raw_results, power_labels)
 fdp_summary_by_setting = summarise_results_by_setting(raw_results, fdp_labels)
 
-# Keep the existing appendix figures as averages over the (n, k) grid.
+# Power is averaged over the (n, k) grid; FDR uses only the manuscript setting.
 power_summary = average_over_design_grid(power_summary_by_setting)
-fdp_summary = average_over_design_grid(fdp_summary_by_setting)
+fdp_summary = fdp_summary_by_setting %>% filter(n == fdr_n, k == fdr_k)
 
 make_jittered = function(df) {
   offsets = df %>%

@@ -15,6 +15,10 @@ source('../../functions/functions.R')
 source('../../functions/simulation_functions.R')
 source('../../functions/helpers.R')
 
+# Output directories
+dir.create("data", showWarnings = FALSE)
+dir.create("results", showWarnings = FALSE)
+
 # Seed
 seed_nk = seed_from_params(n, k, base_seed = 19122025)
 set.seed(seed_ind + seed_nk)

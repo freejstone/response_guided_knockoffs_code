@@ -2,7 +2,7 @@
 #helper functions
 ###########
 #seed_from_params: Returns a seed based off two input parameters
-#save_sim_h5: Saves output file
+#save_sim_h5: Saves output file for Python
 #calc_mineig: Returns smallest eigenvalue. (based off knockpy.utilities.calc_mineig)
 #shift_until_PSD: Ensure diag shifts so that min eigenvalue ≥ tol. (based off knockpy.utilities.shift_until_PSD)
 #scale_until_PSD: Ensure 2*Sigma - gamma S is PSD by adjusting gamma. (based off knockpy.utilities.scale_until_PSD)

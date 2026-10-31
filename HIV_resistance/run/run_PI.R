@@ -12,6 +12,9 @@ reps = 50
 seed = 6122025
 set.seed(seed)
 
+###### Output directory ######
+dir.create("../results", showWarnings = FALSE)
+
 ###### Process ###### 
 
 drug_class = 'PI'
@@ -105,7 +108,10 @@ for (j in 1:length(results)) {
   df.pos_mut <- anti_join(df.pos_mut, negative.drug, by = c("Position", "Mutation"))
   pos_mut <- paste0(df.pos_mut$Position, df.pos_mut$Mutation)
   
-  position_mutation_X = gsub("P|\\.", "", colnames(X))
+  # Column names look like "P74.P" (position 74, mutation letter P). Strip only the
+  # leading "P" and the "." so the mutation letter is kept, giving "74P".
+  stopifnot(all(grepl("^P\\d+\\.[A-Za-z]$", colnames(X))))
+  position_mutation_X = sub("^P(\\d+)\\.(.)$", "\\1\\2", colnames(X))
   
   beta = rep(0, ncol(X))
   beta[position_mutation_X %in% pos_mut] = 1

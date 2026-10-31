@@ -681,8 +681,8 @@ response_guided_kf = function(y, y_probe, X, pos, beta = NULL,
   fdp = rep(0, length(alphalist))
   for (i in 1:length(alphalist)) {
     disc = (qvals <= alphalist[i]) & (W[signs*d > 0] > 0)
-    power[i] = sum(disc & (beta[pos][signs*d > 0] > 0))/max(sum(beta > 0), 1)
-    fdp[i] = sum(disc & (beta[pos][signs*d > 0] <= 0))/max(sum(disc), 1)
+    power[i] = sum(disc & (beta[pos][signs*d > 0]*d > 0))/max(sum(beta*d > 0), 1)
+    fdp[i] = sum(disc & (beta[pos][signs*d > 0]*d <= 0))/max(sum(disc), 1)
   }
   return(list(discs = discs, power = power, fdp = fdp))
 }
@@ -738,8 +738,8 @@ signed_kf = function(y, X, beta, d = 1, type = 'equi', alphalist = seq(0.3, 0.01
   fdp = rep(0, length(alphalist))
   for (i in 1:length(alphalist)) {
     disc = discs[[i]]
-    power[i] = sum(disc & (beta[signs*d > 0] > 0))/max(sum(beta > 0), 1)
-    fdp[i] = sum(disc & (beta[signs*d > 0] <= 0))/max(sum(disc), 1)
+    power[i] = sum(disc & (beta[signs*d > 0]*d > 0))/max(sum(beta*d > 0), 1)
+    fdp[i] = sum(disc & (beta[signs*d > 0]*d <= 0))/max(sum(disc), 1)
   }
   return(list(discs = discs, power = power, fdp = fdp))
 }
@@ -828,23 +828,29 @@ response_guided_kf_FDX = function(y, y_probe, X, pos, beta = NULL,
   signs = sign(t(X[, pos] - X_ko$X_ko) %*%y)*sign(W)
   
   # FDX analysis
-  scores = abs(W[signs*d > 0])
-  labels = sign(W[signs*d > 0])
-  scores_and_labels = cbind(scores, labels)
+  keep = which(signs*d > 0)
+  W_d = W[keep]
+  scores_and_labels = cbind(abs(W_d), sign(W_d))
   discs = list()
   count = 1
-  for (alpha in alpha_list) {
+  for (alpha in alphalist) {
     for (gamma in gammalist) {
-      res = fdp_sd(scores_and_labels, alpha, gamma)
+      if (length(keep) == 0) {
+        res = list(discoveries = numeric(0), discoveries_ind = integer(0))
+      } else {
+        res = fdp_sd(scores_and_labels, alpha, gamma)
+      }
+      # Map back to original feature indices
+      res$discoveries_ind = pos[keep][res$discoveries_ind]
       res$alpha = alpha
       res$gamma = gamma
-      if (is.null(beta)) {
-        discs[[count]] = res
-      } else {
-        res$power = intersect(res$discoveries_ind, which(beta[pos][signs*d > 0] > 0))/max(sum(beta > 0), 1)
-        res$fdp = intersect(res$discoveries_ind, which(beta[pos][signs*d > 0] <= 0))/max(sum(disc), 1)
-        discs[[count]] = res
+      if (!is.null(beta)) {
+        n_disc = length(res$discoveries_ind)
+        n_true = sum(beta[res$discoveries_ind]*d > 0)
+        res$power = n_true/max(sum(beta*d > 0), 1)
+        res$fdp = (n_disc - n_true)/max(n_disc, 1)
       }
+      discs[[count]] = res
       count = count + 1
     }
   }
@@ -988,23 +994,28 @@ response_guided_kf_kFWER = function(y, y_probe, X, pos, beta = NULL,
   signs = sign(t(X[, pos] - X_ko$X_ko) %*%y)*sign(W)
   
   # k-FWER analysis
-  scores = abs(W[signs*d > 0])
-  labels = sign(W[signs*d > 0])
-  scores_and_labels = cbind(scores, labels)
+  keep = which(signs*d > 0)
+  W_d = W[keep]
   discs = list()
   count = 1
-  for (alpha in alpha_list) {
+  for (alpha in alphalist) {
     for (k in klist) {
-      res = js_kfwer(scores_and_labels, alpha, gamma)
-      res$alpha = alpha
-      res$gamma = gamma
-      if (is.null(beta)) {
-        discs[[count]] = res
+      if (length(keep) == 0) {
+        res = list(S_hat = integer(0), tau = Inf, v = 0L)
       } else {
-        res$power = intersect(res$S_hat, which(beta[pos][signs*d > 0] > 0))/max(sum(beta > 0), 1)
-        res$fdp = intersect(res$S_hat, which(beta[pos][signs*d > 0] <= 0))/max(sum(disc), 1)
-        discs[[count]] = res
+        res = js_kfwer(W_d, k = k, alpha = alpha)
       }
+      # Map back to original feature indices
+      res$S_hat = pos[keep][res$S_hat]
+      res$alpha = alpha
+      res$k = k
+      if (!is.null(beta)) {
+        n_disc = length(res$S_hat)
+        n_true = sum(beta[res$S_hat]*d > 0)
+        res$power = n_true/max(sum(beta*d > 0), 1)
+        res$fdp = (n_disc - n_true)/max(n_disc, 1)
+      }
+      discs[[count]] = res
       count = count + 1
     }
   }
